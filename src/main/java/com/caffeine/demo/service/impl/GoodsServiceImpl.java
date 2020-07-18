@@ -3,16 +3,21 @@ package com.caffeine.demo.service.impl;
 import com.caffeine.demo.mapper.GoodsMapper;
 import com.caffeine.demo.pojo.Goods;
 import com.caffeine.demo.service.GoodsService;
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class GoodsServiceImpl implements GoodsService {
@@ -20,7 +25,9 @@ public class GoodsServiceImpl implements GoodsService {
     @Resource
     private GoodsMapper goodsMapper;
 
+
     //得到一件商品的信息
+    @Cacheable(value = "goods", key="#goodsId",sync = true)
     @Override
     public Goods getOneGoodsById(Long goodsId) {
         System.out.println("query database");
@@ -48,6 +55,7 @@ public class GoodsServiceImpl implements GoodsService {
 
     //从数据库获取商品列表
     public Map<String,Object> getAllGoodsByPageDdata(int currentPage) {
+        System.out.println("-----从数据库得到数据");
         Map<String,Object> res = new HashMap<String,Object>();
         PageHelper.startPage(currentPage, 5);
         List<Goods> goodsList = goodsMapper.selectAllGoods();
@@ -56,5 +64,4 @@ public class GoodsServiceImpl implements GoodsService {
         res.put("pageInfo",pageInfo);
         return res;
     }
-
 }
